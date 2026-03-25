@@ -16,20 +16,18 @@ import org.springframework.web.bind.annotation.*;
         import java.util.List;
 
 @RestController
-@RequestMapping("/utilisateurs") // <-- très important, correspond à ton URL
+@RequestMapping("/utilisateurs")
 public class UtilisateurController {
 
     @Autowired
     private UtilisateurRepository utilisateurRepo;
 
-    // POST pour créer un utilisateur
     @PostMapping
     public ResponseEntity<Utilisateur> createUtilisateur(@RequestBody Utilisateur user) {
         Utilisateur saved = utilisateurRepo.save(user);
         return ResponseEntity.ok(saved);
     }
 
-    // GET pour récupérer tous les utilisateurs
     @GetMapping
     public List<Utilisateur> getAllUtilisateurs() {
         return utilisateurRepo.findAll();

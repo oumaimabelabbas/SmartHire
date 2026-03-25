@@ -17,6 +17,9 @@ public class CV {
 
     private String fileName;
 
+    @Lob
+    private byte[] data;
+
     @Column(length = 10000)
     private String extractedText;
 
