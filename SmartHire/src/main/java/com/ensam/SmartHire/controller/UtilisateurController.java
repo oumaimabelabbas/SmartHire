@@ -1,9 +1,16 @@
 package com.ensam.SmartHire.controller;
 
+import com.ensam.SmartHire.dto.LoginDTO;
+import com.ensam.SmartHire.dto.RegisterDTO;
 import com.ensam.SmartHire.model.Utilisateur;
-import com.ensam.SmartHire.repository.UtilisateurRepository;
+import com.ensam.SmartHire.service.JwtService;
+import com.ensam.SmartHire.service.UserService;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -13,23 +20,44 @@ import java.util.List;
 
 import org.springframework.web.bind.annotation.*;
 
-        import java.util.List;
-
 @RestController
-@RequestMapping("/utilisateurs")
+@RequestMapping
+@CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true")
 public class UtilisateurController {
 
     @Autowired
-    private UtilisateurRepository utilisateurRepo;
+    private UserService userService;
+    @Autowired
+    AuthenticationManager authenticationManager;
+    @Autowired
+    JwtService jwtService;
 
-    @PostMapping
-    public ResponseEntity<Utilisateur> createUtilisateur(@RequestBody Utilisateur user) {
-        Utilisateur saved = utilisateurRepo.save(user);
-        return ResponseEntity.ok(saved);
+    @PostMapping("/Login")
+    public ResponseEntity<?> login(@RequestBody LoginDTO loginrequest, HttpServletResponse response){
+        try{
+            authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginrequest.getUsername(),loginrequest.getPassword()));
+            String token = jwtService.generateToken(loginrequest.getUsername());
+            Cookie cookie = new Cookie("jwt",token);
+            cookie.setHttpOnly(true);
+            cookie.setSecure(false);
+            cookie.setPath("/");
+            cookie.setMaxAge(60 * 60);
+
+            response.addCookie(cookie);//sending the token via the cookie
+            return ResponseEntity.ok("Login Succefully");
+
+        }catch(Exception e){
+            System.out.println(e.getMessage());
+            throw new RuntimeException("Username or Password Incorrect");
+        }
+    }
+    @PostMapping("/utilisateurs")
+    public ResponseEntity<Utilisateur> createUtilisateur(@RequestBody RegisterDTO registerUser) {
+        return ResponseEntity.ok(userService.AddUser(registerUser));
     }
 
-    @GetMapping
+    @GetMapping("/utilisateurs")
     public List<Utilisateur> getAllUtilisateurs() {
-        return utilisateurRepo.findAll();
+        return userService.getUsers();
     }
 }
