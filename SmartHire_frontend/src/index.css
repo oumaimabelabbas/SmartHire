@@ -1,0 +1,39 @@
+@import url('https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700;800&family=Manrope:wght@400;500;600;700&display=swap');
+
+:root {
+  --ink: #182f4b;
+  --ink-soft: #345474;
+  --line: #a6bdd7;
+  --surface: rgba(255, 255, 255, 0.88);
+  --font-title: 'Sora', sans-serif;
+  --font-body: 'Manrope', sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+}
+
+body {
+  font-family: var(--font-body);
+  color: var(--ink);
+  background:
+    linear-gradient(rgba(81, 121, 163, 0.13) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(81, 121, 163, 0.13) 1px, transparent 1px),
+    radial-gradient(circle at 0% 0%, #f7fbff 0%, #eef5fd 45%, #e9f2fb 100%);
+  background-size: 42px 42px, 42px 42px, cover;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+#root {
+  width: 100%;
+  margin: 0;
+  background: rgba(247, 251, 255, 0.9);
+  min-height: 100vh;
+}

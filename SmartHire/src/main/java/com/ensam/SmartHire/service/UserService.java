@@ -45,7 +45,8 @@ public class UserService {
         }
 
     }
-    Utilisateur loadUserByUsername(String username){
+    public Utilisateur loadUserByUsername(String username){
+
         return utilisateurRepository.findByUsername(username);
     }
     public List<Utilisateur> getUsers(){

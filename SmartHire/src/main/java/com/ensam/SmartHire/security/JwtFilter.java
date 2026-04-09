@@ -29,6 +29,15 @@ public class JwtFilter extends OncePerRequestFilter {
     //sending a get/post request with the token so he can get the response
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+        String path = request.getRequestURI();
+
+
+        if (path.startsWith("/h2-console") ||
+                path.startsWith("/swagger-ui") ||
+                path.startsWith("/v3/api-docs")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
         String authHeader = request.getHeader("Authorization");
         String token = null;
         String username = null;
@@ -53,11 +62,11 @@ public class JwtFilter extends OncePerRequestFilter {
             //validate token then check if user is part of the db
             if(jwtService.validatetoken(token,userDetails)){
                 //pass to next filter(UsernamePasswordAuthenticationToken)
+                //creer authentication with username roles
                 UsernamePasswordAuthenticationToken authToken =
                         new UsernamePasswordAuthenticationToken(userDetails,null,userDetails.getAuthorities());
                 authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                SecurityContextHolder.getContext().setAuthentication(authToken);
-
+                SecurityContextHolder.getContext().setAuthentication(authToken); //authentifier ce user qui a ce token
 
             }
         }

@@ -11,18 +11,21 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping
-@CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true")
+@CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true")
 public class UtilisateurController {
 
     @Autowired
@@ -36,7 +39,8 @@ public class UtilisateurController {
     public ResponseEntity<?> login(@RequestBody LoginDTO loginrequest, HttpServletResponse response){
         try{
             authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginrequest.getUsername(),loginrequest.getPassword()));
-            String token = jwtService.generateToken(loginrequest.getUsername());
+            Utilisateur user = userService.loadUserByUsername(loginrequest.getUsername());
+            String token = jwtService.generateToken(user.getUsername(),user.getRole().name()); //ajouter els roles dans le token
             Cookie cookie = new Cookie("jwt",token);
             cookie.setHttpOnly(true);
             cookie.setSecure(false);
@@ -44,12 +48,24 @@ public class UtilisateurController {
             cookie.setMaxAge(60 * 60);
 
             response.addCookie(cookie);//sending the token via the cookie
-            return ResponseEntity.ok("Login Succefully");
+            return ResponseEntity.ok(Map.of(
+                    "message", "Login successful"
+            ));
 
         }catch(Exception e){
             System.out.println(e.getMessage());
             throw new RuntimeException("Username or Password Incorrect");
         }
+    }
+    @GetMapping("/me")
+    public ResponseEntity<?> getCurrentUser(Authentication authentication) {
+
+        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+
+        return ResponseEntity.ok(Map.of(
+                "username", userDetails.getUsername(),
+                "role", userDetails.getAuthorities().iterator().next().getAuthority()
+        ));
     }
     @PostMapping("/utilisateurs")
     public ResponseEntity<Utilisateur> createUtilisateur(@RequestBody RegisterDTO registerUser) {

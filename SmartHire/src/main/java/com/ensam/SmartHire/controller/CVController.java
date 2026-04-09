@@ -9,6 +9,8 @@ import com.ensam.SmartHire.service.Pdfservice;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -35,9 +37,10 @@ public class CVController {
 
 
     @PostMapping(value="/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<CV> uploadCV(@RequestParam("file") MultipartFile file,@RequestParam("candidatId") Long candidatId)  {
+    public ResponseEntity<CV> uploadCV(@RequestParam("file") MultipartFile file, Authentication authentication)  {
         try {
-            return ResponseEntity.ok(cvService.createCV(file,candidatId));
+            String username = authentication.getName();
+            return ResponseEntity.ok(cvService.createCV(file,username));
         }catch(IOException e){
             return ResponseEntity.status(500).build();
         }

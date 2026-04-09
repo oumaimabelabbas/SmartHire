@@ -20,8 +20,10 @@ public class JwtService {
     @Value("${jwt.secret}")
     private String secretkey;
 
-    public String generateToken(String username) {
+    public String generateToken(String username, String role) {
         Map<String, Object> claims = new HashMap<>();
+        claims.put("role", role);
+
         return Jwts.builder()
                 .setClaims(claims)
                 .setSubject(username)
@@ -51,6 +53,9 @@ public class JwtService {
                 .build()
                 .parseClaimsJws(token)
                 .getBody();
+    }
+    public String extractRole(String token) {
+        return extractClaim(token, claims -> claims.get("role", String.class));
     }
 
     public boolean validatetoken(String token, UserDetails userDetails) {

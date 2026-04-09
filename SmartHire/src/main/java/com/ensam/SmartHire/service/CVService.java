@@ -20,8 +20,8 @@ public class CVService {
     @Autowired
     private UtilisateurRepository utilisateurRepository;
 
-    public CV createCV(MultipartFile file,long candidat_id) throws IOException {
-        Utilisateur candidat = utilisateurRepository.findById(candidat_id).orElseThrow(()->new RuntimeException("Candidat not found"));
+    public CV createCV(MultipartFile file,String username) throws IOException {
+        Utilisateur candidat = utilisateurRepository.findByUsername(username);
         String text = pdfservice.readPdf(file);
         CV cv = new CV();
         cv.setFileName(file.getOriginalFilename());
