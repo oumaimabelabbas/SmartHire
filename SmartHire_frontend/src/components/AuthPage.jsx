@@ -79,8 +79,6 @@ function AuthPage() {
       throw new Error("Erreur lors de la connexion");
     }
 
-    const data = await res.json();
-
     setMessage("Connexion réussie ");
     setLoginData({ username: '', password: '' })
 
@@ -98,9 +96,10 @@ function AuthPage() {
     }
 
     const user = await mares.json();
-    if (user.role === ROLE_VALUES.CANDIDAT) {
+    localStorage.setItem('smarthire-auth', 'true')
+    if (user.role === "ROLE_CANDIDAT") {
       navigate("/candidat/dashboard");
-    } else if (user.role === ROLE_VALUES.RECRUTEUR) {
+    } else if (user.role === "ROLE_RECRUTEUR") {
       navigate("/recruteur/dashboard");
     } else {
       setMessage("Role utilisateur inconnu ");
@@ -152,8 +151,6 @@ function AuthPage() {
     if (!res.ok) {
       throw new Error("Erreur lors de l'inscription");
     }
-
-    const data = await res.json();
 
     setMessage("Inscription réussie ");
     setRegisterData({

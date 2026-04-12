@@ -1,8 +1,11 @@
 package com.ensam.SmartHire.model;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
+
+import java.util.List;
 
 @Entity
 @Data
@@ -22,7 +25,13 @@ public class CV {
 
     @Column(length = 10000)
     private String extractedText;
+    private Double scoreMatching;
 
     @ManyToOne
     private Utilisateur candidat;
+
+    @OneToMany(mappedBy = "cv")
+    @JsonIgnore
+    private List<Candidature> candidatures;
+
 }

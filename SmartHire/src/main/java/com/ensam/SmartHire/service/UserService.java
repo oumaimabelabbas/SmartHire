@@ -32,7 +32,7 @@ public class UserService {
     }
 
     public void addRoleUser(String username,String role){
-        Utilisateur user = utilisateurRepository.findByUsername(username);
+        Utilisateur user = utilisateurRepository.findByUsername(username).orElseThrow(() -> new RuntimeException("Utilisateur introuvable"));;
         if(user==null){
             throw new RuntimeException("User not found");
         }
@@ -47,9 +47,32 @@ public class UserService {
     }
     public Utilisateur loadUserByUsername(String username){
 
-        return utilisateurRepository.findByUsername(username);
+        Utilisateur user = utilisateurRepository.findByUsername(username).orElseThrow(() -> new RuntimeException("Utilisateur introuvable"));
+        return user;
     }
     public List<Utilisateur> getUsers(){
         return utilisateurRepository.findAll();
+    }
+
+    public Utilisateur update(Utilisateur user,String username) {
+       Utilisateur utilisateur = utilisateurRepository.findByUsername(username).orElseThrow(() -> new RuntimeException("user not found"));
+        if (user.getNom() != null) {
+            utilisateur.setNom(user.getNom());
+        }
+
+        if (user.getPrenom() != null) {
+            utilisateur.setPrenom(user.getPrenom());
+        }
+
+        if (user.getEmail() != null) {
+            utilisateur.setEmail(user.getEmail());
+        }
+
+        if (user.getPassword() != null) {
+            utilisateur.setPassword(passwordEncoder.encode(user.getPassword()));
+        }
+
+        return utilisateurRepository.save(utilisateur);
+
     }
 }

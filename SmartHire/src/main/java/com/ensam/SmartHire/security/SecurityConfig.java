@@ -56,9 +56,11 @@ public class SecurityConfig{
                                 "/v3/api-docs/**",
                                 "/swagger-ui.html",
                                 "/utilisateurs",
+                                "/logout",
                                 "/Login"
                                 )//free this requests from authentication of spring security
                         .permitAll()
+                        .requestMatchers("/cv/**","/offres").authenticated()
                         .anyRequest().authenticated())
                 //make JwtFilter(verify token) before UsernamePasswordAuthenticationFilter(verify usename password login) in the filterchain
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);

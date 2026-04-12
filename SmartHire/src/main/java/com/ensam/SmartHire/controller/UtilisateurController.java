@@ -71,7 +71,30 @@ public class UtilisateurController {
     public ResponseEntity<Utilisateur> createUtilisateur(@RequestBody RegisterDTO registerUser) {
         return ResponseEntity.ok(userService.AddUser(registerUser));
     }
+    @GetMapping("/profile")
+    public Utilisateur getProfile(Authentication auth) {
+        return userService.loadUserByUsername(auth.getName());
+    }
+    @PutMapping("/profile")
+    public Utilisateur updateProfile(@RequestBody Utilisateur user,Authentication authentication) {
+        String username = authentication.getName();
+        return userService.update(user,username);
+    }
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout(HttpServletResponse response) {
 
+        Cookie cookie = new Cookie("jwt", null);
+        cookie.setHttpOnly(true);
+        cookie.setSecure(false);
+        cookie.setPath("/");
+        cookie.setMaxAge(0);
+
+        response.addCookie(cookie);
+
+        return ResponseEntity.ok(Map.of(
+                "message", "Logout successful"
+        ));
+    }
     @GetMapping("/utilisateurs")
     public List<Utilisateur> getAllUtilisateurs() {
         return userService.getUsers();

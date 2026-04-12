@@ -21,7 +21,7 @@ public class CVService {
     private UtilisateurRepository utilisateurRepository;
 
     public CV createCV(MultipartFile file,String username) throws IOException {
-        Utilisateur candidat = utilisateurRepository.findByUsername(username);
+        Utilisateur candidat = utilisateurRepository.findByUsername(username).orElseThrow(() -> new RuntimeException("Candidat introuvable"));
         String text = pdfservice.readPdf(file);
         CV cv = new CV();
         cv.setFileName(file.getOriginalFilename());

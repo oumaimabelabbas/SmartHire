@@ -41,33 +41,60 @@ public class JwtFilter extends OncePerRequestFilter {
         String authHeader = request.getHeader("Authorization");
         String token = null;
         String username = null;
-        if(request.getCookies()!=null){
-            for(Cookie cookie:request.getCookies()){
-                if("jwt".equals(cookie.getName())){
-                     token = cookie.getValue();
+
+        try {
+            if (request.getCookies() != null) {
+                for (Cookie cookie : request.getCookies()) {
+                    if ("jwt".equals(cookie.getName())) {
+                        token = cookie.getValue();
+                    }
                 }
             }
-        }
-        if(token != null){
-            username=jwtService.extractUsername(token);
+
+            if (token != null) {
+                username = jwtService.extractUsername(token);
+            }
+            System.out.println("TOKEN: " + token);
+            System.out.println("USERNAME: " + username);
+
+        } catch (Exception e) {
+            System.out.println("JWT ERROR: " + e.getMessage());
+            filterChain.doFilter(request, response);
+            return; // ❗ STOP processing invalid token
         }
 //        if(authHeader != null && authHeader.startsWith("Bearer ")){
 //            token = authHeader.substring(7); // start after Bearer space
 //            username = jwtService.extractUsername(token);
 //
 //        }
-        if(username !=null && SecurityContextHolder.getContext().getAuthentication() ==null){
+        if(username != null && SecurityContextHolder.getContext().getAuthentication() == null){
+            try {
+                UserDetails userDetails = applicationContext
+                        .getBean(MyUserDetailsService.class)
+                        .loadUserByUsername(username);
 
-            UserDetails userDetails = applicationContext.getBean(MyUserDetailsService.class).loadUserByUsername(username);
-            //validate token then check if user is part of the db
-            if(jwtService.validatetoken(token,userDetails)){
-                //pass to next filter(UsernamePasswordAuthenticationToken)
-                //creer authentication with username roles
-                UsernamePasswordAuthenticationToken authToken =
-                        new UsernamePasswordAuthenticationToken(userDetails,null,userDetails.getAuthorities());
-                authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                SecurityContextHolder.getContext().setAuthentication(authToken); //authentifier ce user qui a ce token
+                boolean valid = jwtService.validatetoken(token, userDetails);
+                System.out.println("VALID TOKEN: " + valid);
 
+                if(valid){
+
+                    UsernamePasswordAuthenticationToken authToken =
+                            new UsernamePasswordAuthenticationToken(
+                                    userDetails,null,userDetails.getAuthorities());
+
+                    authToken.setDetails(
+                            new WebAuthenticationDetailsSource().buildDetails(request)
+                    );
+
+                    SecurityContextHolder.getContext().setAuthentication(authToken);
+
+                    System.out.println("AUTHENTICATION SET ✅");
+                } else {
+                    System.out.println("TOKEN INVALID ❌");
+                }
+
+            } catch (Exception e) {
+                System.out.println("Erreur JWT: " + e.getMessage());
             }
         }
         filterChain.doFilter(request,response);

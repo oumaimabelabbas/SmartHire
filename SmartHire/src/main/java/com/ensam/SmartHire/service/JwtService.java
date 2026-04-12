@@ -33,9 +33,12 @@ public class JwtService {
                 .compact();
     }
 
+//    private Key getKey() {
+//        byte[] keyBytes = Base64.getDecoder().decode(secretkey);
+//        return Keys.hmacShaKeyFor(keyBytes);
+//    }
     private Key getKey() {
-        byte[] keyBytes = Base64.getDecoder().decode(secretkey);
-        return Keys.hmacShaKeyFor(keyBytes);
+        return Keys.hmacShaKeyFor(secretkey.getBytes());
     }
 
     public String extractUsername(String token) {

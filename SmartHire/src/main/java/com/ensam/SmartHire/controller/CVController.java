@@ -50,4 +50,6 @@ public class CVController {
     public ResponseEntity<List<CV>> getAllCV() {
         return ResponseEntity.ok(cvService.getAllCvs());
     }
+
+
 }
