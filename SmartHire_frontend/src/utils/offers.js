@@ -1,4 +1,95 @@
 export const OFFERS_API_URL = import.meta.env.VITE_OFFERS_API_URL || 'http://localhost:8086/offres'
+export const CANDIDATURES_API_URL =
+  import.meta.env.VITE_CANDIDATURES_API_URL || 'http://localhost:8086/candidatures'
+const APPLICATIONS_STORAGE_KEY = 'candidate-offer-applications'
+
+function normalizeFingerprintValue(value) {
+  return String(value ?? '')
+    .trim()
+    .toLowerCase()
+}
+
+function buildOfferFingerprint(offer) {
+  return [
+    normalizeFingerprintValue(offer?.title),
+    normalizeFingerprintValue(offer?.company),
+    normalizeFingerprintValue(offer?.location),
+    normalizeFingerprintValue(offer?.contractType),
+  ].join('|')
+}
+
+export function readApplicationsStatusMap() {
+  try {
+    const raw = localStorage.getItem(APPLICATIONS_STORAGE_KEY)
+    if (!raw) {
+      return {}
+    }
+
+    const parsed = JSON.parse(raw)
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+      return {}
+    }
+
+    return parsed
+  } catch {
+    return {}
+  }
+}
+
+export function writeOfferApplicationStatus(offer, statut) {
+  const current = readApplicationsStatusMap()
+  const offerId = offer?.id
+  if (!offerId) {
+    return current
+  }
+
+  const next = {
+    ...current,
+    [String(offerId)]: {
+      hasApplied: true,
+      statut: statut || 'EN_ATTENTE',
+      fingerprint: buildOfferFingerprint(offer),
+      updatedAt: Date.now(),
+    },
+  }
+  localStorage.setItem(APPLICATIONS_STORAGE_KEY, JSON.stringify(next))
+  return next
+}
+
+export function getOfferApplicationStatus(offer) {
+  const statusMap = readApplicationsStatusMap()
+  const status = statusMap[String(offer?.id)]
+
+  if (!status?.hasApplied) {
+    return null
+  }
+
+  // Ignore legacy/stale entries that don't carry a fingerprint.
+  if (!status.fingerprint) {
+    return null
+  }
+
+  if (status.fingerprint !== buildOfferFingerprint(offer)) {
+    return null
+  }
+
+  return status
+}
+
+export function enrichOffersWithApplicationStatus(offers) {
+  return offers.map((offer) => {
+    const status = getOfferApplicationStatus(offer)
+    if (!status) {
+      return offer
+    }
+
+    return {
+      ...offer,
+      hasApplied: true,
+      statut: status.statut || 'EN_ATTENTE',
+    }
+  })
+}
 
 function normalizeOffersPayload(payload) {
   if (Array.isArray(payload)) {

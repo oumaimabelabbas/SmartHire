@@ -45,5 +45,6 @@ public class Utilisateur {
     private List<OffreEmploi> offres;
 
     @OneToMany(mappedBy = "candidat")
+    
     private List<Candidature> candidatures;
 }

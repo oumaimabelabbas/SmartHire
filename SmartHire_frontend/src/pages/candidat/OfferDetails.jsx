@@ -1,7 +1,14 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import smartHireLogo from '../../assets/smarthire-logo.png'
-import { fetchAllOffers, mapOfferForCandidate } from '../../utils/offers'
+import {
+  CANDIDATURES_API_URL,
+  enrichOffersWithApplicationStatus,
+  fetchAllOffers,
+  getOfferApplicationStatus,
+  mapOfferForCandidate,
+  writeOfferApplicationStatus,
+} from '../../utils/offers'
 
 const mockCvSkills = ['react', 'javascript', 'spring boot', 'docker', 'sql']
 
@@ -43,6 +50,18 @@ function generateAssistantAnswer(question, offer, score) {
   return `Pour cette offre, insiste sur les compétences ${offer.requiredSkills.slice(0, 2).join(' et ')} et des réalisations mesurables.`
 }
 
+function extractCvId(uploadResult) {
+  const rawCvId =
+    uploadResult?.cvId ?? uploadResult?.id ?? uploadResult?.data?.id ?? uploadResult?.data?.cvId ?? null
+
+  const parsedCvId = Number(rawCvId)
+  if (!Number.isInteger(parsedCvId) || parsedCvId <= 0) {
+    return null
+  }
+
+  return parsedCvId
+}
+
 function OfferDetailsPage() {
   const { offerId } = useParams()
   const [offers, setOffers] = useState([])
@@ -53,8 +72,16 @@ function OfferDetailsPage() {
   )
 
   const [uploadedCvName, setUploadedCvName] = useState('')
+  const [uploadedCvId, setUploadedCvId] = useState(null)
   const [uploadState, setUploadState] = useState({ loading: false, message: '', error: '' })
-  const [applicationState, setApplicationState] = useState({ score: null, note: '' })
+  const [applicationState, setApplicationState] = useState({
+    score: null,
+    note: '',
+    hasApplied: false,
+    statut: '',
+    loading: false,
+    error: '',
+  })
   const [chatInput, setChatInput] = useState('')
   const [chatMessages, setChatMessages] = useState([])
 
@@ -64,7 +91,8 @@ function OfferDetailsPage() {
 
       try {
         const incoming = await fetchAllOffers()
-        setOffers(incoming.map((offer) => mapOfferForCandidate(offer)))
+        const mapped = incoming.map((offer) => mapOfferForCandidate(offer))
+        setOffers(enrichOffersWithApplicationStatus(mapped))
         setOffersState({ loading: false, error: '' })
       } catch (error) {
         console.error(error)
@@ -74,6 +102,32 @@ function OfferDetailsPage() {
 
     loadOffers()
   }, [])
+
+  useEffect(() => {
+    if (!selectedOffer) {
+      return
+    }
+
+    if (selectedOffer.hasApplied) {
+      setApplicationState((prev) => ({
+        ...prev,
+        hasApplied: true,
+        statut: selectedOffer.statut || 'EN_ATTENTE',
+      }))
+      return
+    }
+
+    const status = getOfferApplicationStatus(selectedOffer)
+    if (!status) {
+      return
+    }
+
+    setApplicationState((prev) => ({
+      ...prev,
+      hasApplied: true,
+      statut: status.statut || 'EN_ATTENTE',
+    }))
+  }, [selectedOffer])
 
   if (offersState.loading) {
     return (
@@ -106,6 +160,9 @@ function OfferDetailsPage() {
       return
     }
 
+    // Prevent reusing an old cvId if the new upload fails.
+    setUploadedCvId(null)
+    setUploadedCvName('')
     setUploadState({ loading: true, message: '', error: '' })
 
     const formData = new FormData()
@@ -122,7 +179,14 @@ function OfferDetailsPage() {
         throw new Error('Erreur upload')
       }
 
+      const uploadResult = await response.json()
+      const resolvedCvId = extractCvId(uploadResult)
+      if (!resolvedCvId) {
+        throw new Error('Upload reussi mais cvId introuvable dans la reponse backend.')
+      }
+
       setUploadedCvName(selectedFile.name)
+      setUploadedCvId(resolvedCvId)
       setUploadState({ loading: false, message: 'CV uploadé avec succès.', error: '' })
       setChatMessages([
         {
@@ -134,22 +198,88 @@ function OfferDetailsPage() {
       ])
     } catch (error) {
       console.error(error)
-      setUploadState({ loading: false, message: '', error: 'Erreur serveur pendant l upload du CV.' })
+      setUploadState({
+        loading: false,
+        message: '',
+        error: error?.message || 'Erreur serveur pendant l upload du CV.',
+      })
     }
   }
 
-  const handleApply = () => {
+  const handleApply = async () => {
     if (!selectedOffer) {
       return
     }
 
-    if (!uploadedCvName) {
-      setApplicationState({ score: null, note: 'Upload ton CV pour calculer un matching fiable.' })
+    if (applicationState.hasApplied) {
       return
     }
 
-    const score = computeMatchingScore(selectedOffer, Boolean(uploadedCvName))
-    setApplicationState({ score, note: explainScore(score, selectedOffer) })
+    if (!uploadedCvName) {
+      setApplicationState((prev) => ({
+        ...prev,
+        score: null,
+        note: 'Upload ton CV pour calculer un matching fiable.',
+        error: '',
+      }))
+      return
+    }
+
+    if (!Number.isInteger(Number(uploadedCvId)) || Number(uploadedCvId) <= 0) {
+      setApplicationState((prev) => ({
+        ...prev,
+        error: 'Le cvId est introuvable. Re-uploade ton CV puis reessaie.',
+      }))
+      return
+    }
+
+    setApplicationState((prev) => ({ ...prev, loading: true, error: '' }))
+
+    try {
+      const response = await fetch(CANDIDATURES_API_URL, {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          offreId: selectedOffer.id,
+          cvId: Number(uploadedCvId),
+        }),
+      })
+
+      if (!response.ok) {
+        const backendMessage = await response.text().catch(() => '')
+        throw new Error(backendMessage || 'Erreur lors de la candidature.')
+      }
+
+      const candidature = await response.json().catch(() => null)
+      const statut = candidature?.statut || 'EN_ATTENTE'
+      writeOfferApplicationStatus(selectedOffer, statut)
+
+      const score = computeMatchingScore(selectedOffer, Boolean(uploadedCvName))
+      setApplicationState({
+        score,
+        note: explainScore(score, selectedOffer),
+        hasApplied: true,
+        statut,
+        loading: false,
+        error: '',
+      })
+
+      setOffers((prev) =>
+        prev.map((offer) =>
+          offer.id === selectedOffer.id ? { ...offer, hasApplied: true, statut } : offer,
+        ),
+      )
+    } catch (error) {
+      console.error(error)
+      setApplicationState((prev) => ({
+        ...prev,
+        loading: false,
+        error: error?.message || 'Erreur serveur pendant la candidature.',
+      }))
+    }
   }
 
   const handleSendQuestion = (event) => {
@@ -240,12 +370,22 @@ function OfferDetailsPage() {
                 </small>
               </label>
 
-              <button type="button" className="candidate-v2-apply-btn" onClick={handleApply}>
-                Postuler
+              <button
+                type="button"
+                className="candidate-v2-apply-btn"
+                onClick={handleApply}
+                disabled={applicationState.hasApplied || applicationState.loading}
+              >
+                {applicationState.hasApplied
+                  ? applicationState.statut || 'EN_ATTENTE'
+                  : applicationState.loading
+                    ? 'Postulation...'
+                    : 'Postuler'}
               </button>
             </div>
 
             {uploadState.error ? <p className="candidate-v2-error">{uploadState.error}</p> : null}
+            {applicationState.error ? <p className="candidate-v2-error">{applicationState.error}</p> : null}
 
             <div className="candidate-offer-score-wrap">
               <div

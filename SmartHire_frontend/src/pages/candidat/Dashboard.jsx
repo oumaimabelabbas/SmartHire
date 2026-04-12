@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import smartHireLogo from '../../assets/smarthire-logo.png'
-import { fetchAllOffers, mapOfferForCandidate } from '../../utils/offers'
+import { enrichOffersWithApplicationStatus, fetchAllOffers, mapOfferForCandidate } from '../../utils/offers'
 
 function normalizeText(value) {
   return value.trim().toLowerCase()
@@ -24,7 +24,8 @@ function CandidatDashboardPage() {
 
       try {
         const incoming = await fetchAllOffers()
-        setOffers(incoming.map((offer) => mapOfferForCandidate(offer)))
+        const mapped = incoming.map((offer) => mapOfferForCandidate(offer))
+        setOffers(enrichOffersWithApplicationStatus(mapped))
         setOffersState({ loading: false, error: '' })
       } catch (error) {
         console.error(error)
@@ -141,7 +142,7 @@ function CandidatDashboardPage() {
                         className="candidate-offer-view-btn"
                         onClick={() => navigate(`/candidat/offres/${offer.id}`)}
                       >
-                        Voir
+                        {offer.hasApplied ? offer.statut || 'EN_ATTENTE' : 'Voir'}
                       </button>
                     </div>
                   </article>

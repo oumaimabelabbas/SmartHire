@@ -1,5 +1,6 @@
 package com.ensam.SmartHire.controller;
 
+import com.ensam.SmartHire.dto.CVResponseDTO;
 import com.ensam.SmartHire.dto.CandidatureDTO;
 import com.ensam.SmartHire.model.CV;
 import com.ensam.SmartHire.model.StatutCandidature;
@@ -21,7 +22,7 @@ public class CandidatureController {
 
     @PostMapping
     public ResponseEntity<?> postuler(@RequestBody CandidatureDTO dto,
-                                      Authentication authentication){
+                                                  Authentication authentication){
         String username = authentication.getName();
 
         return ResponseEntity.ok(

@@ -1,5 +1,6 @@
 package com.ensam.SmartHire.controller;
 
+import com.ensam.SmartHire.dto.CVResponseDTO;
 import com.ensam.SmartHire.model.CV;
 import com.ensam.SmartHire.model.Utilisateur;
 import com.ensam.SmartHire.repository.CVRepository;
@@ -38,10 +39,11 @@ public class CVController {
 
 
     @PostMapping(value="/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<CV> uploadCV(@RequestParam("file") MultipartFile file, Authentication authentication)  {
+    public ResponseEntity<CVResponseDTO> uploadCV(@RequestParam("file") MultipartFile file, Authentication authentication)  {
         try {
             String username = authentication.getName();
-            return ResponseEntity.ok(cvService.createCV(file,username));
+            CV cv = cvService.createCV(file,username);
+            return ResponseEntity.ok(new CVResponseDTO(cv.getId()));
         }catch(IOException e){
             return ResponseEntity.status(500).build();
         }
