@@ -1,6 +1,7 @@
 package com.ensam.SmartHire.controller;
 
 import com.ensam.SmartHire.dto.OffreEmploiDTO;
+import com.ensam.SmartHire.model.OffreEmploi;
 import com.ensam.SmartHire.service.OffreEmploiService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -71,4 +72,26 @@ public class OffreEmploiController {
         }
 
     }
+
+    @GetMapping("/search")
+    public ResponseEntity<?> filterOffre(Authentication authentication,@RequestParam(required = false) String poste,@RequestParam(required = false) String lieu,@RequestParam(required = false) String contrat){
+        try{
+            String username = authentication.getName();
+            List<OffreEmploi> offreEmplois =  offreEmploiService.filterOffre(poste,lieu,contrat,username);
+            if(!offreEmplois.isEmpty()){
+                return ResponseEntity.ok(offreEmplois);
+            }
+            else{
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Aucune offre ne correspond aux critères");
+            }
+
+        }
+        catch(Exception e){
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Erreur serveur : " + e.getMessage());
+        }
+    }
+
+
 }

@@ -2,6 +2,7 @@ package com.ensam.SmartHire.service;
 
 import com.ensam.SmartHire.dto.OffreEmploiDTO;
 import com.ensam.SmartHire.model.OffreEmploi;
+import com.ensam.SmartHire.model.TypeContrat;
 import com.ensam.SmartHire.model.Utilisateur;
 import com.ensam.SmartHire.repository.OffreEmploiRepository;
 import com.ensam.SmartHire.model.OffreEmploi;
@@ -13,6 +14,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 @Service
 public class OffreEmploiService {
@@ -77,5 +79,40 @@ public class OffreEmploiService {
 
     public List<OffreEmploi> getOffresByRecruteur(String username){
         return offreEmploiRepository.findByRecruteurUsername(username);
+    }
+
+    public List<OffreEmploi> filterOffre(String poste, String lieu, String contrat, String username) {
+
+        List<OffreEmploi> offreEmplois = offreEmploiRepository.findAll();
+        List<OffreEmploi> filtered = new ArrayList<>();
+        TypeContrat contratEnum = null;
+
+        if (contrat != null && !contrat.isEmpty() && !contrat.equalsIgnoreCase("all")) {
+            contratEnum = TypeContrat.valueOf(contrat.toUpperCase());
+        }
+
+        for (OffreEmploi o : offreEmplois) {
+
+            boolean matchPoste =
+                    poste == null || poste.isEmpty() ||
+                            o.getEntreprise().toLowerCase().contains(poste.toLowerCase()) ||
+                            o.getDescription().toLowerCase().contains(poste.toLowerCase()) ||
+                            o.getAProposRole().toLowerCase().contains(poste.toLowerCase());
+
+            boolean matchLieu =
+                    lieu == null || lieu.isEmpty() ||
+                            o.getLocalisation().toLowerCase().contains(lieu.toLowerCase());
+
+            boolean matchContrat =
+                    contratEnum == null ||
+                            o.getTypeContrat()==contratEnum
+                    ;
+
+            if (matchPoste && matchLieu && matchContrat) {
+                filtered.add(o);
+            }
+        }
+
+        return filtered;
     }
 }

@@ -1,11 +1,24 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import smartHireLogo from '../../assets/smarthire-logo.png'
 import { enrichOffersWithApplicationStatus, fetchAllOffers, mapOfferForCandidate } from '../../utils/offers'
 
-function normalizeText(value) {
-  return value.trim().toLowerCase()
-}
+const MOROCCAN_CITIES = [
+  { value: 'Casablanca', label: 'Casablanca' },
+  { value: 'Rabat', label: 'Rabat' },
+  { value: 'Fes', label: 'Fes' },
+  { value: 'Marrakech', label: 'Marrakech' },
+  { value: 'Tanger', label: 'Tanger' },
+  { value: 'Agadir', label: 'Agadir' },
+  { value: 'Meknes', label: 'Meknes' },
+  { value: 'Oujda', label: 'Oujda' },
+  { value: 'Kenitra', label: 'Kenitra' },
+  { value: 'Tetouan', label: 'Tetouan' },
+  { value: 'Safi', label: 'Safi' },
+  { value: 'El Jadida', label: 'El Jadida' },
+  { value: 'Beni Mellal', label: 'Beni Mellal' },
+  { value: 'Nador', label: 'Nador' },
+]
 
 function CandidatDashboardPage() {
   const navigate = useNavigate()
@@ -36,31 +49,54 @@ function CandidatDashboardPage() {
     loadOffers()
   }, [])
 
-  const filteredOffers = useMemo(() => {
-    const keyword = normalizeText(preferences.keywords)
-    const location = normalizeText(preferences.location)
-
-    return offers.filter((offer) => {
-      const searchable = `${offer.title} ${offer.company} ${offer.location} ${offer.contractType}`.toLowerCase()
-      const matchKeyword = keyword ? searchable.includes(keyword) : true
-      const matchLocation = location ? normalizeText(offer.location).includes(location) : true
-      const matchContract =
-        preferences.contractType === 'all'
-          ? true
-          : normalizeText(offer.contractType) === normalizeText(preferences.contractType)
-
-      return matchKeyword && matchLocation && matchContract
-    })
-  }, [offers, preferences])
 
   const handlePreferencesChange = (field, value) => {
     setPreferences((prev) => ({ ...prev, [field]: value }))
   }
 
-  const handleSearch = (event) => {
+  const handleSearch = async (event) => {
     event.preventDefault()
-    setHasSearched(true)
+
+    const params = new URLSearchParams()
+    if (preferences.keywords.trim()) {
+  params.append('poste', preferences.keywords) 
+}
+
+if (preferences.location) {
+  params.append('lieu', preferences.location) 
+}
+
+if (preferences.contractType !== 'all') {
+  params.append('contrat', preferences.contractType) 
+}
+
+    setOffersState({ loading: true, error: '' })
+
+    try {
+      const response = await fetch(`http://localhost:8086/offres/search?${params.toString()}`,
+    {
+    method: 'GET',
+    credentials: 'include', 
+  })
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`)
+      }
+
+      const result = await response.json()
+      const mapped = result.map((offer) => mapOfferForCandidate(offer))
+
+      setOffers(enrichOffersWithApplicationStatus(mapped))
+      setHasSearched(true)
+      setOffersState({ loading: false, error: '' })
+    } catch (error) {
+      console.error(error)
+      setOffers([])
+      setHasSearched(true)
+      setOffersState({ loading: false, error: 'La recherche est indisponible pour le moment.' })
+    }
   }
+
 
   return (
     <main className="candidate-layout-page">
@@ -85,12 +121,17 @@ function CandidatDashboardPage() {
               value={preferences.keywords}
               onChange={(event) => handlePreferencesChange('keywords', event.target.value)}
             />
-            <input
-              type="text"
-              placeholder="[Lieu]"
+            <select
               value={preferences.location}
               onChange={(event) => handlePreferencesChange('location', event.target.value)}
-            />
+            >
+              <option value="">[Toutes les villes]</option>
+              {MOROCCAN_CITIES.map((city) => (
+                <option key={city.value} value={city.value}>
+                  {city.label}
+                </option>
+              ))}
+            </select>
             <select
               value={preferences.contractType}
               onChange={(event) => handlePreferencesChange('contractType', event.target.value)}
@@ -98,6 +139,7 @@ function CandidatDashboardPage() {
               <option value="all">[Type de contrat]</option>
               <option value="CDI">CDI</option>
               <option value="CDD">CDD</option>
+              <option value="Stage">Stage</option>
               <option value="Freelance">Freelance</option>
             </select>
             <button type="submit" className="candidate-board-search-btn" aria-label="Rechercher">
@@ -109,16 +151,16 @@ function CandidatDashboardPage() {
             {offersState.error ? <p className="candidate-v2-error">{offersState.error}</p> : null}
 
             {hasSearched ? (
-              <p className="candidate-board-result-count">{filteredOffers.length} offre(s) trouvée(s)</p>
+              <p className="candidate-board-result-count">{offers.length} offre(s) trouvée(s)</p>
             ) : null}
 
             {offersState.loading ? (
               <article className="candidate-v2-empty-card">
                 <h3>Chargement des offres...</h3>
               </article>
-            ) : filteredOffers.length ? (
+            ) : offers.length ? (
               <div className="candidate-offers-cards-grid">
-                {filteredOffers.map((offer) => (
+                {offers.map((offer) => (
                   <article key={offer.id} className="candidate-offer-list-card">
                     <div className="candidate-offer-list-top">
                       <div className="candidate-offer-list-logo" aria-hidden={!offer.logoSrc}>
