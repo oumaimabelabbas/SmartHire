@@ -1,0 +1,4 @@
+export const ROLE_VALUES = {
+  CANDIDAT: 'CANDIDAT',
+  RECRUTEUR: 'RECRUTEUR',
+}

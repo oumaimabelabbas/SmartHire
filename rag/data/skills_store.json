@@ -1,0 +1,187 @@
+{
+  "cd2a9dcdd5756b52": {
+    "updated_at": "2026-04-24T15:21:26.317337",
+    "profile": {
+      "nom": "IMANE BEN ALI",
+      "email": "imaanebenali20@gmail.com",
+      "technologies": [
+        "Python",
+        "Java",
+        "JavaScript",
+        "C++",
+        "Spring Boot",
+        "FastAPI",
+        "MySQL",
+        "MongoDB",
+        "Docker",
+        "Git"
+      ],
+      "competences": [
+        "Communication",
+        "Travail en \u00e9quipe",
+        "Autonomie",
+        "Rigueur",
+        "Analyse"
+      ],
+      "annees_experience": 5
+    }
+  },
+  "cv-1": {
+    "updated_at": "2026-04-11T16:04:23.751952",
+    "profile": {
+      "nom": "Alice Durand",
+      "email": "alice@example.com",
+      "technologies": [
+        "Python",
+        "Docker",
+        "Kubernetes"
+      ],
+      "competences": [
+        "Leadership",
+        "Agile"
+      ],
+      "annees_experience": 5
+    }
+  },
+  "cv-2": {
+    "updated_at": "2026-04-11T16:04:23.756454",
+    "profile": {
+      "nom": "Bob Smith",
+      "email": "bob@example.com",
+      "technologies": [
+        "JavaScript",
+        "React",
+        "Node.js"
+      ],
+      "competences": [
+        "Communication",
+        "Problem-solving"
+      ],
+      "annees_experience": 3
+    }
+  },
+  "5c3b4aca069d27d9": {
+    "updated_at": "2026-04-11T17:31:43.846237",
+    "profile": {
+      "nom": "Imane Ben",
+      "email": "AATAOUIAimaanebenali20@gmail.com",
+      "technologies": [
+        "Python",
+        "Java",
+        "JavaScript",
+        "C++",
+        "MySQL"
+      ],
+      "competences": [
+        "Organisation"
+      ],
+      "annees_experience": 0
+    }
+  },
+  "4479cb038aa143cf": {
+    "updated_at": "2026-04-12T13:16:40.360064",
+    "profile": {
+      "nom": "Imane Ben Ali",
+      "email": "imaanebenali20@gmail.com",
+      "technologies": [
+        "Java",
+        "C++",
+        "Python",
+        "JavaScript",
+        "HTML",
+        "CSS",
+        "SASS",
+        "SQL",
+        "RapidMiner",
+        "JavaFX",
+        "Scene Builder",
+        "MySQL",
+        "Rokisim",
+        "MATLAB"
+      ],
+      "competences": [
+        "Organisation",
+        "Gestion de projet",
+        "D\u00e9veloppement",
+        "Travail en \u00e9quipe",
+        "Ergonomie",
+        "Accessibilit\u00e9",
+        "Conception UI/UX",
+        "Conception Responsive"
+      ],
+      "annees_experience": 6
+    }
+  },
+  "0a8a22b0776267f4": {
+    "updated_at": "2026-04-24T13:28:34.155525",
+    "profile": {
+      "nom": "Jean Dupont",
+      "email": "jean@example.com",
+      "technologies": [
+        "Java",
+        "Spring Boot",
+        "PostgreSQL"
+      ],
+      "competences": [
+        "Travail en \u00e9quipe",
+        "Leadership",
+        "Autonomie"
+      ],
+      "annees_experience": 3
+    }
+  },
+  "6e76480f4ded0fea": {
+    "updated_at": "2026-04-14T19:44:50.997657",
+    "profile": {
+      "nom": "Imane Ben Ali",
+      "email": "aimaanebenali20@gmail.com",
+      "technologies": [
+        "Java",
+        "C++",
+        "Python",
+        "JavaScript",
+        "HTML",
+        "CSS",
+        "Sass",
+        "SQL",
+        "RapidMiner",
+        "JavaFX",
+        "Scene Builder",
+        "MySQL",
+        "Rokisim",
+        "MATLAB"
+      ],
+      "competences": [
+        "Organisation",
+        "Leadership",
+        "Travail en \u00e9quipe",
+        "Conception UX/UI",
+        "Ergonomie",
+        "Accessibilit\u00e9",
+        "D\u00e9veloppement Front-end",
+        "D\u00e9veloppement Back-end",
+        "Mod\u00e9lisation",
+        "Simulation"
+      ],
+      "annees_experience": 6
+    }
+  },
+  "ae5db31acfb61941": {
+    "updated_at": "2026-04-24T13:58:47.156266",
+    "profile": {
+      "nom": "Jean Dupont",
+      "email": "jean@example.com",
+      "technologies": [
+        "Java",
+        "Spring Boot",
+        "PostgreSQL"
+      ],
+      "competences": [
+        "Travail en equipe",
+        "Leadership",
+        "Autonomie"
+      ],
+      "annees_experience": 3
+    }
+  }
+}
