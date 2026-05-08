@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { setCurrentCandidateScope } from '../utils/offers'
 
 const PROFILE_API_URL = 'http://localhost:8086/profile'
 const ME_API_URL = 'http://localhost:8086/me'
@@ -68,6 +69,7 @@ function ProfilePage() {
           throw new Error('Session non valide. Connecte-toi pour voir ton profil.')
         }
 
+        setCurrentCandidateScope(user)
         setProfile(user)
         setFormData({
           nom: user.nom,
@@ -125,6 +127,7 @@ function ProfilePage() {
       }
 
       const updated = normalizeUserPayload(await response.json())
+      setCurrentCandidateScope(updated)
       setProfile(updated)
       setFormData((prev) => ({
         ...prev,

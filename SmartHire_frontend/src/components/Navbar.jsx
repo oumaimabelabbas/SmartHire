@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import smartHireLogo from '../assets/smarthire-logo.png'
+import { clearCurrentCandidateScope, setCurrentCandidateScope } from '../utils/offers'
 
 const PROFILE_API_URL = 'http://localhost:8086/profile'
 const ME_API_URL = 'http://localhost:8086/me'
@@ -35,6 +36,7 @@ function Navbar() {
     }
 
     localStorage.setItem('smarthire-auth', 'false')
+    clearCurrentCandidateScope()
     setIsLoggedIn(false)
     setUserRole('')
     navigate('/', { replace: true })
@@ -65,6 +67,7 @@ function Navbar() {
           const profileUser = await profileResponse.json().catch(() => null)
           const role = resolveRole(profileUser)
           localStorage.setItem('smarthire-auth', 'true')
+          setCurrentCandidateScope(profileUser)
           setIsLoggedIn(true)
           setUserRole(role)
           return
@@ -80,15 +83,18 @@ function Navbar() {
           if (meResponse.ok) {
             const meUser = await meResponse.json().catch(() => null)
             localStorage.setItem('smarthire-auth', 'true')
+            setCurrentCandidateScope(meUser)
             setUserRole(resolveRole(meUser))
           } else {
             localStorage.setItem('smarthire-auth', 'false')
+            clearCurrentCandidateScope()
             setUserRole('')
           }
         }
       } catch {
         if (isMounted) {
           localStorage.setItem('smarthire-auth', 'false')
+          clearCurrentCandidateScope()
           setIsLoggedIn(false)
           setUserRole('')
         }
@@ -129,6 +135,11 @@ function Navbar() {
               {userRole.includes('CANDIDAT') ? (
                 <Link className="btn btn-light" to="/candidat/dashboard">
                   Dashboard Candidat
+                </Link>
+              ) : null}
+              {userRole.includes('RECRUTEUR') ? (
+                <Link className="btn btn-light" to="/recruteur/dashboard">
+                  Dashboard Recruteur
                 </Link>
               ) : null}
 

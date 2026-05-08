@@ -34,4 +34,20 @@ build/
 .vscode/
 rag/.env
 
+rag/__pycache__/
+rag/*.pyc
+
+rag/venv/
+rag/env/
+rag/*.db
+rag/chroma_db/
+rag/faiss_index/
+
 .env
+
+SmartHire_frontend/node_modules/
+
+
+# Application properties sensibles
+src/main/resources/application-prod.properties
+src/main/resources/application-local.properties

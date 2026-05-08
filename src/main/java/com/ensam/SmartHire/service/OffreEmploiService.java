@@ -1,9 +1,8 @@
 package com.ensam.SmartHire.service;
 
+import com.ensam.SmartHire.dto.CandidatureRecruteurDTO;
 import com.ensam.SmartHire.dto.OffreEmploiDTO;
-import com.ensam.SmartHire.model.OffreEmploi;
-import com.ensam.SmartHire.model.TypeContrat;
-import com.ensam.SmartHire.model.Utilisateur;
+import com.ensam.SmartHire.model.*;
 import com.ensam.SmartHire.repository.OffreEmploiRepository;
 import com.ensam.SmartHire.model.OffreEmploi;
 import com.ensam.SmartHire.repository.UtilisateurRepository;
@@ -115,4 +114,11 @@ public class OffreEmploiService {
 
         return filtered;
     }
+    public OffreEmploi getOffre(String username,long offre_id){
+        OffreEmploi offreEmploi = offreEmploiRepository.findById(offre_id).orElseThrow(()->new RuntimeException("Offre doesnt exist"));
+        return offreEmploi;
+    }
+
+
+
 }

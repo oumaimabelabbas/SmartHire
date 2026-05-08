@@ -285,9 +285,9 @@ class CVScoringService:
         strengths = CVScoringService._to_string_list(payload.get("strengths", []), CVScoringService._CHATBOT_MAX_ITEMS)
         improvement_areas = CVScoringService._to_string_list(payload.get("improvement_areas", []), CVScoringService._CHATBOT_MAX_ITEMS)
         action_items = CVScoringService._to_string_list(payload.get("action_items", []), CVScoringService._CHATBOT_MAX_ITEMS)
-        # Mode pro: chatbot = coaching actionnable uniquement (2 actions courtes).
-        action_items = CVScoringService._prepare_action_items(action_items, improvement_areas)
-        answer = CVScoringService._format_two_actions_answer(action_items)
+        target_count = CVScoringService._extract_requested_count(question)
+        action_items = CVScoringService._prepare_action_items(action_items, improvement_areas, target_count)
+        answer = CVScoringService._format_actions_answer(action_items)
         if len(answer) > (CVScoringService._CHATBOT_MAX_ANSWER_CHARS * 2):
             answer = answer[: (CVScoringService._CHATBOT_MAX_ANSWER_CHARS * 2)].rstrip() + "..."
 
@@ -302,75 +302,65 @@ class CVScoringService:
         }
 
     @staticmethod
-    def _detect_chatbot_focus(question: str) -> str:
+    def _extract_requested_count(question: str) -> int:
         text = CVScoringService._normalize(question)
         if not text:
-            return "general"
+            return CVScoringService._CHATBOT_ACTION_ITEMS
 
-        rewrite_markers = {
-            "reecris", "reformule", "rewrite", "bullet", "phrase", "resume", "résumé",
-        }
-        strengths_markers = {
-            "point fort", "points forts", "forces", "strength", "strengths", "atout", "atouts",
-        }
-        actions_markers = {
-            "action", "actions", "action concrete", "actions concretes", "plan d action", "plan d'action", "propose 2",
-        }
-        improvements_markers = {
-            "ameliorer", "améliorer", "a renforcer", "a améliorer", "faiblesse", "faiblesses", "improvement", "gap", "gaps",
-        }
-
-        if any(marker in text for marker in rewrite_markers):
-            return "rewrite"
-        if any(marker in text for marker in strengths_markers):
-            return "strengths"
-        if any(marker in text for marker in actions_markers):
-            return "actions"
-        if any(marker in text for marker in improvements_markers):
-            return "improvements"
-        return "general"
+        if re.search(r"\b3\b", text) or "trois" in text:
+            return 3
+        if re.search(r"\b1\b", text) or "une" in text or "un" in text:
+            return 1
+        if re.search(r"\b2\b", text) or "deux" in text:
+            return 2
+        return CVScoringService._CHATBOT_ACTION_ITEMS
 
     @staticmethod
-    def _prepare_action_items(action_items: List[str], improvement_areas: List[str]) -> List[str]:
+    def _prepare_action_items(action_items: List[str], improvement_areas: List[str], target_count: int) -> List[str]:
         cleaned_actions = CVScoringService._to_string_list(action_items, CVScoringService._CHATBOT_MAX_ITEMS)
         cleaned_improvements = CVScoringService._to_string_list(improvement_areas, CVScoringService._CHATBOT_MAX_ITEMS)
+        count = max(1, min(3, int(target_count or CVScoringService._CHATBOT_ACTION_ITEMS)))
 
-        picked = cleaned_actions[: CVScoringService._CHATBOT_ACTION_ITEMS]
-        if len(picked) < CVScoringService._CHATBOT_ACTION_ITEMS:
+        picked = cleaned_actions[:count]
+        if len(picked) < count:
             for item in cleaned_improvements:
                 candidate = item
                 lower_item = CVScoringService._normalize(candidate)
                 if not lower_item.startswith("renforcer "):
                     candidate = f"Renforcer {candidate}"
                 picked.append(candidate)
-                if len(picked) >= CVScoringService._CHATBOT_ACTION_ITEMS:
+                if len(picked) >= count:
                     break
 
-        if len(picked) < CVScoringService._CHATBOT_ACTION_ITEMS:
+        if len(picked) < count:
             defaults = [
                 "Reecris le resume en ciblant les competences de l'offre",
                 "Ajoute un projet recent avec stack, role et resultat mesurable",
+                "Ajoute une experience liee directement aux exigences de l'offre",
             ]
             for item in defaults:
                 picked.append(item)
-                if len(picked) >= CVScoringService._CHATBOT_ACTION_ITEMS:
+                if len(picked) >= count:
                     break
 
-        return [CVScoringService._compact_action_text(item) for item in picked[: CVScoringService._CHATBOT_ACTION_ITEMS]]
+        return [CVScoringService._compact_action_text(item) for item in picked[:count]]
 
     @staticmethod
     def _compact_action_text(value: str) -> str:
         text = " ".join(str(value or "").strip().split())
         if not text:
             return "Ajouter une experience pertinente et mesurable"
-        if len(text) > 95:
-            text = text[:95].rstrip() + "..."
+        if len(text) > 120:
+            text = text[:120].rstrip() + "..."
         return text.rstrip(". ")
 
     @staticmethod
-    def _format_two_actions_answer(action_items: List[str]) -> str:
-        actions = CVScoringService._prepare_action_items(action_items, [])
-        return f"2 actions concretes :\n1) {actions[0]}.\n2) {actions[1]}."
+    def _format_actions_answer(action_items: List[str]) -> str:
+        actions = [item.rstrip(". ") + "." for item in action_items]
+        lines = ["Actions concretes :"]
+        for index, item in enumerate(actions, start=1):
+            lines.append(f"{index}) {item}")
+        return "\n".join(lines)
 
     @staticmethod
     def _build_diagnostic_summary(overall_score: int, sub_scores: Dict[str, int], llm_explanation: str) -> str:

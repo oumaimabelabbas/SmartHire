@@ -93,5 +93,14 @@ public class OffreEmploiController {
         }
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<?> updateOffre(@PathVariable Long id, Authentication authentication){
+        try {
+            String username = authentication.getName();
+            return ResponseEntity.ok(offreEmploiService.getOffre(username,id));
+        }catch(Exception e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        }
 
+    }
 }

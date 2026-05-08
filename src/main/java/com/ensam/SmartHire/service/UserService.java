@@ -9,8 +9,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 @Service
-public class UserService {
     @Autowired
     UtilisateurRepository utilisateurRepository;
     @Autowired
@@ -18,17 +18,22 @@ public class UserService {
 
 
     public Utilisateur AddUser(RegisterDTO registeruser){
-       Utilisateur user = new Utilisateur();
-       user.setEmail(registeruser.getEmail());
-       user.setUsername(registeruser.getUsername());
-       user.setPassword(passwordEncoder.encode(registeruser.getPassword()));
-       if(registeruser.getRole() != null){
-           user.setRole(registeruser.getRole());
+       // 🔧 Valider les données d'entrée
+       if (registeruser == null) {
        }
        else{
            throw new IllegalArgumentException("Role is required");
        }
        return utilisateurRepository.save(user);
+       Utilisateur user = new Utilisateur();
+       user.setEmail(registeruser.getEmail());
+       user.setUsername(registeruser.getUsername());
+       user.setPassword(passwordEncoder.encode(registeruser.getPassword()));
+       if(registeruser.getRole() != null){
+           return utilisateurRepository.save(user);
+       } catch (Exception e) {
+           throw new RegistrationException("Erreur lors de la création de l'utilisateur: " + e.getMessage());
+       }
     }
 
     public void addRoleUser(String username,String role){

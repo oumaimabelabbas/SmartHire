@@ -10,11 +10,42 @@ export const CV_ANALYSIS_APPLY_API_URL =
 export const CV_ANALYSIS_HEALTH_API_URL =
   import.meta.env.VITE_CV_ANALYSIS_HEALTH_API_URL || 'http://localhost:8086/api/cv-analysis/rag-health'
 const APPLICATIONS_STORAGE_KEY = 'candidate-offer-applications'
+const CURRENT_USER_SCOPE_STORAGE_KEY = 'smarthire-user-scope'
 
 function normalizeFingerprintValue(value) {
   return String(value ?? '')
     .trim()
     .toLowerCase()
+}
+
+function normalizeScopeValue(value) {
+  return String(value ?? '')
+    .trim()
+    .toLowerCase()
+}
+
+export function resolveCandidateScope(user) {
+  return (
+    normalizeScopeValue(user?.id ?? user?.userId ?? user?.username ?? user?.email ?? '') || 'anonymous'
+  )
+}
+
+export function setCurrentCandidateScope(user) {
+  const scope = resolveCandidateScope(user)
+  localStorage.setItem(CURRENT_USER_SCOPE_STORAGE_KEY, scope)
+  return scope
+}
+
+export function clearCurrentCandidateScope() {
+  localStorage.removeItem(CURRENT_USER_SCOPE_STORAGE_KEY)
+}
+
+function getCurrentCandidateScope() {
+  return normalizeScopeValue(localStorage.getItem(CURRENT_USER_SCOPE_STORAGE_KEY)) || 'anonymous'
+}
+
+function getApplicationsStorageKey() {
+  return `${APPLICATIONS_STORAGE_KEY}:${getCurrentCandidateScope()}`
 }
 
 function buildOfferFingerprint(offer) {
@@ -28,7 +59,7 @@ function buildOfferFingerprint(offer) {
 
 export function readApplicationsStatusMap() {
   try {
-    const raw = localStorage.getItem(APPLICATIONS_STORAGE_KEY)
+    const raw = localStorage.getItem(getApplicationsStorageKey())
     if (!raw) {
       return {}
     }

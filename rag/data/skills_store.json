@@ -1,29 +1,51 @@
 {
   "cd2a9dcdd5756b52": {
-    "updated_at": "2026-04-24T15:21:26.317337",
+    "updated_at": "2026-05-08T21:46:52.466797",
     "profile": {
       "nom": "IMANE BEN ALI",
       "email": "imaanebenali20@gmail.com",
       "technologies": [
         "Python",
         "Java",
-        "JavaScript",
         "C++",
-        "Spring Boot",
+        "JavaScript",
+        "SQL",
+        "HTML",
+        "CSS",
+        "Scikit-Learn",
+        "Pandas",
+        "NumPy",
+        "Matplotlib",
+        "Seaborn",
+        "BeautifulSoup",
+        "Selenium",
+        "Node.js",
         "FastAPI",
-        "MySQL",
+        "Spring Boot",
         "MongoDB",
+        "MySQL",
+        "Git",
         "Docker",
-        "Git"
+        "Odoo",
+        "LaTeX",
+        "Oracle Cloud Infrastructure",
+        "TOGAF",
+        "UML",
+        "ActiveMQ",
+        "STOMP",
+        "JSON",
+        "PyMongo"
       ],
       "competences": [
         "Communication",
         "Travail en \u00e9quipe",
-        "Autonomie",
+        "Analyse",
         "Rigueur",
-        "Analyse"
+        "Autonomie",
+        "Curiosit\u00e9",
+        "Capacit\u00e9 d'apprentissage"
       ],
-      "annees_experience": 5
+      "annees_experience": 2
     }
   },
   "cv-1": {
@@ -182,6 +204,42 @@
         "Autonomie"
       ],
       "annees_experience": 3
+    }
+  },
+  "c87dac65c19b965e": {
+    "updated_at": "2026-05-06T20:33:58.840415",
+    "profile": {
+      "nom": "Jean Dupont",
+      "email": "jean@example.com",
+      "technologies": [
+        "Java",
+        "Spring Boot",
+        "PostgreSQL"
+      ],
+      "competences": [
+        "Travail en \u00e9quipe",
+        "Leadership",
+        "Autonomie"
+      ],
+      "annees_experience": 3
+    }
+  },
+  "609bf81d0348a46d": {
+    "updated_at": "2026-05-06T20:40:22.371123",
+    "profile": {
+      "nom": "Jean Dupont - Developpeur Backend",
+      "email": "jean@example.com",
+      "technologies": [
+        "Java",
+        "Spring Boot",
+        "PostgreSQL"
+      ],
+      "competences": [
+        "Leadership",
+        "Travail en \u00e9quipe",
+        "Autonomie"
+      ],
+      "annees_experience": 1
     }
   }
 }

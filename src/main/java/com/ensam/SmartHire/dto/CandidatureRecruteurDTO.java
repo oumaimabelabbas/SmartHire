@@ -1,6 +1,7 @@
 package com.ensam.SmartHire.dto;
 
 import com.ensam.SmartHire.model.StatutCandidature;
+import jakarta.persistence.Column;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -13,6 +14,10 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class CandidatureRecruteurDTO {
     private Long candidatureId;
+    private Integer overallScore;
+
+    @Column(length = 2000)
+    private String scoreExplanation;
 
     private String nom;
     private String prenom;

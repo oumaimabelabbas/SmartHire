@@ -38,7 +38,7 @@ public class CandidatureController {
         );
     }
     @GetMapping("/offre/{offreId}")
-    public ResponseEntity<?> getCandidature(Authentication authentication,@PathVariable Long offreid){
+    public ResponseEntity<?> getCandidature(Authentication authentication,@PathVariable("offreId") Long offreid){
         try{
             String username = authentication.getName();
             return ResponseEntity.ok(candidatureService.getcandidatoffre(username,offreid));

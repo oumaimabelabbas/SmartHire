@@ -52,8 +52,19 @@ public class CandidatureService {
     }
 
     public List<CandidatureRecruteurDTO> getcandidatoffre(String username, Long offreid) {
+
+        Utilisateur recruteur = utilisateurRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("Recruteur introuvable"));
+
+        OffreEmploi offre = offreEmploiRepository.findById(offreid)
+                .orElseThrow(() -> new RuntimeException("Offre introuvable"));
+
+        if (!offre.getRecruteur().getId().equals(recruteur.getId())) {
+            throw new RuntimeException("Vous n'avez pas accès à cette offre");
+        }
+
         List<Candidature> candidatures = candidatureRepository.findByOffreId(offreid);
-        CandidatureRecruteurDTO candidaturedto = new CandidatureRecruteurDTO();
+
         return candidatures.stream().map(c -> CandidatureRecruteurDTO.builder()
                 .candidatureId(c.getId())
                 .nom(c.getCandidat().getNom())
@@ -61,12 +72,15 @@ public class CandidatureService {
                 .username(c.getCandidat().getUsername())
                 .cvName(c.getCv().getFileName())
                 .cvId(c.getCv().getId())
+                .overallScore(c.getOverallScore())
+                .scoreExplanation(c.getScoreExplanation())
+
                 .dateCandidature(c.getDateCandidature())
                 .statut(c.getStatut())
                 .build()
         ).toList();
-
     }
+
 
     public Candidature updateStatut(Long id, StatutCandidature statut, String username) {
         Candidature candidature = candidatureRepository.findById(id).orElseThrow(() -> new RuntimeException("Candidature introuvable"));

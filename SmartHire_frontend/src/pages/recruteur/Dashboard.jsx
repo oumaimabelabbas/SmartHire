@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import smartHireLogo from '../../assets/smarthire-logo.png'
-import { mapOfferForRecruiter, OFFERS_API_URL } from '../../utils/offers'
+import { mapOfferForRecruiter, OFFERS_API_URL, CANDIDATURES_API_URL } from '../../utils/offers'
 
 function normalizeText(value) {
   return value.trim().toLowerCase()
@@ -20,6 +21,7 @@ function buildScoreFromTitle(title) {
 
 function RecruiterDashboardPage() {
   const [offers, setOffers] = useState([])
+  const navigate = useNavigate()
   const [offersState, setOffersState] = useState({ loading: true, error: '' })
   const [searchTitle, setSearchTitle] = useState('')
   const [isFormOpen, setIsFormOpen] = useState(false)
@@ -60,7 +62,33 @@ function RecruiterDashboardPage() {
 
         const data = await response.json()
         const incoming = Array.isArray(data) ? data : []
-        setOffers(incoming.map((offer) => mapOfferForRecruiter(offer)))
+        // Keep only offers that appear to belong to the current recruiter (attempt by entreprise or creator)
+        const mapped = incoming.map((offer) => mapOfferForRecruiter(offer))
+
+        // try to fetch current user to filter offers owned by this recruiter
+        let currentUser = null
+        try {
+          const profileRes = await fetch('/profile', { method: 'GET', credentials: 'include' })
+          if (profileRes.ok) {
+            currentUser = await profileRes.json().catch(() => null)
+          }
+        } catch {
+          // ignore
+        }
+
+        let visible = mapped
+        if (currentUser) {
+          const normalizedCompany = (currentUser?.entreprise ?? currentUser?.company ?? currentUser?.username ?? '').toString().trim().toLowerCase()
+          visible = mapped.filter((o) => {
+            const offerCompany = (o.entreprise ?? o.company ?? o.companyName ?? o.entreprise ?? '').toString().trim().toLowerCase()
+            if (offerCompany && normalizedCompany && offerCompany === normalizedCompany) return true
+            // try match by creator id if available
+            if (o.creatorId && (currentUser?.id ?? currentUser?.userId) && String(o.creatorId) === String(currentUser?.id ?? currentUser?.userId)) return true
+            return false
+          })
+        }
+
+        setOffers(visible)
         setOffersState({ loading: false, error: '' })
       } catch (error) {
         console.error(error)
@@ -70,6 +98,11 @@ function RecruiterDashboardPage() {
 
     loadOffers()
   }, [])
+
+  const handleSelectOffer = (offer) => {
+    if (!offer || !offer.id) return
+    navigate(`/recruteur/offres/${offer.id}`)
+  }
 
   const handleFormChange = (field, value) => {
     setFormState((prev) => ({ ...prev, [field]: value }))
@@ -368,42 +401,28 @@ function RecruiterDashboardPage() {
                   <th>Localisation</th>
                   <th>Type</th>
                   <th>Mode</th>
-                  <th>Score de Matching</th>
                 </tr>
               </thead>
               <tbody>
                 {offersState.loading ? (
                   <tr>
-                    <td colSpan={6} className="recruiter-table-empty">
+                    <td colSpan={5} className="recruiter-table-empty">
                       Chargement des offres...
                     </td>
                   </tr>
                 ) : filteredOffers.length ? (
                   filteredOffers.map((offer) => (
-                    <tr key={offer.id}>
+                    <tr key={offer.id} onClick={() => handleSelectOffer(offer)} className="recruiter-offer-row">
                       <td>{offer.titre}</td>
                       <td>{offer.entreprise}</td>
                       <td>{offer.localisation || '-'}</td>
                       <td>{offer.typeContrat}</td>
                       <td>{offer.modeTravail}</td>
-                      <td>
-                        <span
-                          className={
-                            offer.scoreMatching >= 80
-                              ? 'recruiter-score-chip is-high'
-                              : offer.scoreMatching >= 70
-                                ? 'recruiter-score-chip is-medium'
-                                : 'recruiter-score-chip is-low'
-                          }
-                        >
-                          {offer.scoreMatching}%
-                        </span>
-                      </td>
                     </tr>
                   ))
                 ) : (
                   <tr>
-                    <td colSpan={6} className="recruiter-table-empty">
+                    <td colSpan={5} className="recruiter-table-empty">
                       Aucune offre trouvee pour cette recherche.
                     </td>
                   </tr>
@@ -411,6 +430,8 @@ function RecruiterDashboardPage() {
               </tbody>
             </table>
           </section>
+
+          
         </div>
       </section>
     </main>

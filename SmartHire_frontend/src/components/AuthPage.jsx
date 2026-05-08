@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { ROLE_VALUES } from '../constants/roles'
+import { setCurrentCandidateScope } from '../utils/offers'
 
 function AuthPage() {
   const location = useLocation()
@@ -55,70 +56,78 @@ function AuthPage() {
     updateQuery('register', nextRole)
   }
 
-  const handleLoginSubmit = async (event) => {
-    event.preventDefault()
-    const { username, password } = loginData;
-    if (!username.trim() || !password.trim()) {
-      setMessage('Veuillez remplir username et password.')
-      return
-    }
-    try {
-    const res = await fetch("http://localhost:8086/Login", {
-      method: "POST",
-      credentials: "include",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        username,
-        password,
-      }),
-    });
+   const handleLoginSubmit = async (event) => {
+     event.preventDefault()
+     const { username, password } = loginData;
+     if (!username.trim() || !password.trim()) {
+       setMessage('Veuillez remplir username et password.')
+       return
+     }
+     try {
+     const res = await fetch("http://localhost:8086/Login", {
+       method: "POST",
+       credentials: "include",
+       headers: {
+         "Content-Type": "application/json",
+       },
+       body: JSON.stringify({
+         username,
+         password,
+       }),
+     });
 
-    if (!res.ok) {
-      throw new Error("Erreur lors de la connexion");
-    }
+     if (!res.ok) {
+       // 🔧 Extraire le message d'erreur du serveur
+       try {
+         const errorData = await res.json()
+         setMessage(errorData.message || "Erreur lors de la connexion")
+       } catch (e) {
+         setMessage("Erreur lors de la connexion")
+       }
+       return
+     }
 
-    setMessage("Connexion réussie ");
-    setLoginData({ username: '', password: '' })
+     setMessage("Connexion réussie ");
+     setLoginData({ username: '', password: '' })
 
-      try {
-    const mares = await fetch("http://localhost:8086/me", {
-      method: "GET",
-      credentials: "include",
-      headers: {
-        "Content-Type": "application/json",
-      }
-    });
+       try {
+     const mares = await fetch("http://localhost:8086/me", {
+       method: "GET",
+       credentials: "include",
+       headers: {
+         "Content-Type": "application/json",
+       }
+     });
 
-    if (!res.ok) {
-      throw new Error("Erreur lors de l'inscription");
-    }
+     if (!mares.ok) {
+       throw new Error("Erreur lors de la récupération du profil");
+     }
 
-    const user = await mares.json();
-    localStorage.setItem('smarthire-auth', 'true')
-    if (user.role === "ROLE_CANDIDAT") {
-      navigate("/candidat/dashboard");
-    } else if (user.role === "ROLE_RECRUTEUR") {
-      navigate("/recruteur/dashboard");
-    } else {
-      setMessage("Role utilisateur inconnu ");
-    }
-
-    
-      
-
-  } catch (err) {
-    setMessage("Erreur serveur ");
-    console.log(err)
-  }
+     const user = await mares.json();
+     localStorage.setItem('smarthire-auth', 'true')
+     setCurrentCandidateScope(user)
+     if (user.role === "ROLE_CANDIDAT") {
+       navigate("/candidat/dashboard");
+     } else if (user.role === "ROLE_RECRUTEUR") {
+       navigate("/recruteur/dashboard");
+     } else {
+       setMessage("Role utilisateur inconnu ");
+     }
 
 
-  } catch (err) {
-    setMessage("Erreur serveur ");
-    console.log(err)
-  }
-  }
+
+
+   } catch (err) {
+     setMessage(err.message || "Erreur serveur ");
+     console.log(err)
+   }
+
+
+   } catch (err) {
+     setMessage(err.message || "Erreur serveur ");
+     console.log(err)
+   }
+   }
 
   const handleRegisterSubmit = async (event) => {
     event.preventDefault()
@@ -148,18 +157,25 @@ function AuthPage() {
       }),
     });
 
-    if (!res.ok) {
-      throw new Error("Erreur lors de l'inscription");
-    }
+     if (!res.ok) {
+       // 🔧 Extraire le message d'erreur du serveur
+       try {
+         const errorData = await res.json()
+         setMessage(errorData.message || "Erreur lors de l'inscription")
+       } catch (e) {
+         setMessage("Erreur lors de l'inscription")
+       }
+       return
+     }
 
-    setMessage("Inscription réussie ");
-    setRegisterData({
-      username: '',
-      email: '',  
-      role: initialRole,
-      password: '',
-      confirmPassword: '',
-    })
+     setMessage("Inscription réussie ");
+     setRegisterData({
+       username: '',
+       email: '',
+       role: initialRole,
+       password: '',
+       confirmPassword: '',
+     })
 
       
 
