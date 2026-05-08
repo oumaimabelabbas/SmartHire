@@ -43,6 +43,10 @@ rag/*.db
 rag/chroma_db/
 rag/faiss_index/
 
+rag/data/vector_store_chroma/...   
+rag/data/embedding_cache.json
+rag/services/__pycache__/...
+
 .env
 
 SmartHire_frontend/node_modules/
