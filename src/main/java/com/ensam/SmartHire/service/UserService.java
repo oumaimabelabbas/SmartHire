@@ -9,8 +9,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 @Service
+public class UserService {
     @Autowired
     UtilisateurRepository utilisateurRepository;
     @Autowired
@@ -18,22 +18,17 @@ import java.util.Optional;
 
 
     public Utilisateur AddUser(RegisterDTO registeruser){
-       // 🔧 Valider les données d'entrée
-       if (registeruser == null) {
-       }
-       else{
-           throw new IllegalArgumentException("Role is required");
-       }
-       return utilisateurRepository.save(user);
-       Utilisateur user = new Utilisateur();
-       user.setEmail(registeruser.getEmail());
-       user.setUsername(registeruser.getUsername());
-       user.setPassword(passwordEncoder.encode(registeruser.getPassword()));
-       if(registeruser.getRole() != null){
-           return utilisateurRepository.save(user);
-       } catch (Exception e) {
-           throw new RegistrationException("Erreur lors de la création de l'utilisateur: " + e.getMessage());
-       }
+        Utilisateur user = new Utilisateur();
+        user.setEmail(registeruser.getEmail());
+        user.setUsername(registeruser.getUsername());
+        user.setPassword(passwordEncoder.encode(registeruser.getPassword()));
+        if(registeruser.getRole() != null){
+            user.setRole(registeruser.getRole());
+        }
+        else{
+            throw new IllegalArgumentException("Role is required");
+        }
+        return utilisateurRepository.save(user);
     }
 
     public void addRoleUser(String username,String role){
@@ -42,9 +37,9 @@ import java.util.Optional;
             throw new RuntimeException("User not found");
         }
         try{
-           Role newRole = Role.valueOf(role);
-           user.setRole(newRole);
-           utilisateurRepository.save(user);
+            Role newRole = Role.valueOf(role);
+            user.setRole(newRole);
+            utilisateurRepository.save(user);
         }catch(Exception e){
             throw  new RuntimeException("Invalid role "+role);
         }
@@ -60,7 +55,7 @@ import java.util.Optional;
     }
 
     public Utilisateur update(Utilisateur user,String username) {
-       Utilisateur utilisateur = utilisateurRepository.findByUsername(username).orElseThrow(() -> new RuntimeException("user not found"));
+        Utilisateur utilisateur = utilisateurRepository.findByUsername(username).orElseThrow(() -> new RuntimeException("user not found"));
         if (user.getNom() != null) {
             utilisateur.setNom(user.getNom());
         }

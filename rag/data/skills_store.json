@@ -241,5 +241,63 @@
       ],
       "annees_experience": 1
     }
+  },
+  "9ac7ee524afb05e7": {
+    "updated_at": "2026-06-12T11:54:16.571962",
+    "profile": {
+      "nom": "Oumaima Belabbas",
+      "email": "oumaimabelabbas2003@gmail.com",
+      "technologies": [
+        "Node.js",
+        "Express.js",
+        "MongoDB",
+        "FastAPI",
+        "HTML",
+        "CSS",
+        "JavaScript",
+        "JWT",
+        "ActiveMQ",
+        "MySQL",
+        "Python",
+        "Next.js",
+        "Flask",
+        "TypeScript",
+        "PostgreSQL",
+        "API REST",
+        "Microservices"
+      ],
+      "competences": [
+        "S\u00e9rieuse",
+        "Autonome",
+        "Motiv\u00e9e",
+        "Passionn\u00e9e par le d\u00e9veloppement web",
+        "Compr\u00e9hension des microservices"
+      ],
+      "annees_experience": 2
+    }
+  },
+  "53f6feec37628061": {
+    "updated_at": "2026-06-12T12:09:06.659815",
+    "profile": {
+      "nom": "Oumaima Belabbas",
+      "email": "oumaimabelabbas2003@gmail.comMekn",
+      "technologies": [
+        "Python",
+        "Java",
+        "JavaScript",
+        "TypeScript",
+        "Flask",
+        "FastAPI",
+        "Express.js",
+        "Next.js",
+        "PostgreSQL",
+        "MySQL",
+        "MongoDB"
+      ],
+      "competences": [
+        "Communication"
+      ],
+      "annees_experience": 0
+    }
   }
 }
